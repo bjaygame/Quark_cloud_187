@@ -1,9 +1,44 @@
 import os 
 import re 
 import sys 
-import requests 
+import requests
+import smtplib
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
 
 cookie_list = os.getenv("COOKIE_QUARK").split('\n|&&')
+
+# 邮箱通知
+SMTP_SERVER = os.getenv("SMTP_SERVER")
+SMTP_PORT = os.getenv("SMTP_PORT", default=587)  # 587 TLS 端口，使用 465 代表 SSL
+EMAIL = os.getenv("EMAIL")  # 你的邮箱
+PASSWORD = os.getenv("PASSWORD")  # 你的 SMTP 授权码（不是邮箱密码）
+
+email_config_is_ok = False
+
+if SMTP_SERVER is not None and SMTP_PORT is not None and EMAIL is not None and PASSWORD is not None:
+    email_config_is_ok = True
+
+def send_email(body: str):
+    SUBJECT = "夸克网盘自动签到"
+    try:
+        # 创建邮件对象
+        msg = MIMEMultipart()
+        msg["From"] = EMAIL
+        msg["To"] = EMAIL
+        msg["Subject"] = SUBJECT
+        # 添加邮件正文
+        msg.attach(MIMEText(body, "plain"))
+
+        # 连接 SMTP 服务器
+        server = smtplib.SMTP(SMTP_SERVER, int(SMTP_PORT))
+        if int(SMTP_PORT) == 587:
+            server.starttls()  # 启用 TLS 加密
+        server.login(EMAIL, PASSWORD)  # 登录 SMTP 服务器
+        server.sendmail(EMAIL, EMAIL, msg.as_string())  # 发送邮件
+        server.quit()  # 关闭连接
+    except Exception as e:
+        print(f"邮件发送失败: {e}")
 
 # 添加 Server酱 推送函数
 def send_to_server(title, desp):
@@ -29,6 +64,8 @@ def send_to_server(title, desp):
 def send(title, message):
     print(f"{title}: {message}")
     send_to_server(title, message)
+    if email_config_is_ok:
+            send_email(message)
 
 # 获取环境变量 
 def get_env(): 
