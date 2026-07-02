@@ -176,14 +176,7 @@ class Quark:
         # 每日领空间
         growth_info = self.get_growth_info()
         if growth_info:
-            log += (
-                f" {'88VIP' if growth_info['88VIP'] else '普通用户'} {self.param.get('user')}\n"
-                f"💾 网盘总容量：{self.convert_bytes(growth_info['total_capacity'])}，"
-                f"签到累计容量：")
-            if "sign_reward" in growth_info['cap_composition']:
-                log += f"{self.convert_bytes(growth_info['cap_composition']['sign_reward'])}\n"
-            else:
-                log += "0 MB\n"
+            log += f" {'88VIP' if growth_info['88VIP'] else '普通用户'} {self.param.get('user')}\n"
             if growth_info["cap_sign"]["sign_daily"]:
                 log += (
                     f"✅ 签到日志: 今日已签到+{self.convert_bytes(growth_info['cap_sign']['sign_daily_reward'])}，"
@@ -198,6 +191,13 @@ class Quark:
                     )
                 else:
                     log += f"❌ 签到异常: {sign_return}\n"
+            log += (
+                f"💾 网盘总容量：{self.convert_bytes(growth_info['total_capacity'])}，"
+                f"签到累计容量：")
+            if "sign_reward" in growth_info['cap_composition']:
+                log += f"{self.convert_bytes(growth_info['cap_composition']['sign_reward'])}\n"
+            else:
+                log += "0 MB\n"
         else:
             # log += f"❌ 签到异常: 获取成长信息失败\n"
             raise Exception("❌ 签到异常: 获取成长信息失败")  # 适用于单账号情形，当 cookie 值失效后直接报错，方便通过 github action 的操作系统来进行提醒 如果你使用的是多账号签到的话，不要跟进此更新
