@@ -22,7 +22,7 @@ if SMTP_SERVER is not None and SMTP_PORT is not None and EMAIL is not None and P
     email_config_is_ok = True
 
 def send_email(body: str):
-    SUBJECT = "夸克网盘自动签到"
+    SUBJECT = "夸克网盘签到"
     try:
         # 创建邮件对象
         msg = MIMEMultipart()
@@ -179,21 +179,21 @@ class Quark:
             log += f" {'88VIP' if growth_info['88VIP'] else '普通用户'} {self.param.get('user')}\n"
             if growth_info["cap_sign"]["sign_daily"]:
                 log += (
-                    f"✅ 签到日志: 今日已签到+{self.convert_bytes(growth_info['cap_sign']['sign_daily_reward'])}，"
+                    f"✅今日已签到+{self.convert_bytes(growth_info['cap_sign']['sign_daily_reward'])}，"
                     f"连签进度({growth_info['cap_sign']['sign_progress']}/{growth_info['cap_sign']['sign_target']})\n"
                 )
             else:
                 sign, sign_return = self.get_growth_sign()
                 if sign:
                     log += (
-                        f"✅ 执行签到: 今日签到+{self.convert_bytes(sign_return)}，"
+                        f"✅今日签到+{self.convert_bytes(sign_return)}，"
                         f"连签进度({growth_info['cap_sign']['sign_progress'] + 1}/{growth_info['cap_sign']['sign_target']})\n"
                     )
                 else:
                     log += f"❌ 签到异常: {sign_return}\n"
             log += (
-                f"💾 网盘总容量：{self.convert_bytes(growth_info['total_capacity'])}，"
-                f"签到累计容量：")
+                f"💾总容量：{self.convert_bytes(growth_info['total_capacity'])}，"
+                f"累计+")
             if "sign_reward" in growth_info['cap_composition']:
                 log += f"{self.convert_bytes(growth_info['cap_composition']['sign_reward'])}\n"
             else:
@@ -225,7 +225,7 @@ def main():
                 user_data.update({a[0:a.index('=')]: a[a.index('=') + 1:]})
         # print(user_data)
         # 开始任务
-        log = f"🙍🏻‍♂️ 第{i + 1}个账号"
+        log = f"🙍🏻‍♂️第{i + 1}个账号"
         msg += log
         # 登录
         log = Quark(user_data).do_sign()
