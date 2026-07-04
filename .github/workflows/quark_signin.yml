@@ -6,36 +6,49 @@ on:
     - cron: '0 5 * * *' # 北京时间 13:00 (UTC+8 -> UTC+5)
   workflow_dispatch: # 允许手动触发
 
-# 赋予写入 Actions Variables 的权限
-permissions:
-  actions: write
-  contents: read
-
 jobs:
   check-if-already-signed:
     runs-on: ubuntu-latest
     outputs:
       skip: ${{ steps.check.outputs.skip }}
+      date: ${{ steps.get-date.outputs.date }}
     steps:
-      - name: 获取当前日期并检查变量
-        id: check
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: 检出代码
+        uses: actions/checkout@v3
+
+      - name: 获取当前北京时间
+        id: get-date
         run: |
           current_date=$(TZ='Asia/Shanghai' date '+%Y-%m-%d')
+          echo "date=$current_date" >> "$GITHUB_OUTPUT"
           echo "当前北京时间: $current_date"
-          
-          # 尝试读取仓库变量 LAST_CHECKIN_DATE (如果不存在则为空)
-          last_date=$(gh variable get LAST_CHECKIN_DATE 2>/dev/null || echo "")
-          echo "上次签到日期: $last_date"
-          
-          if [ "$last_date" = "$current_date" ]; then
-            echo "今天已成功签到，跳过执行。"
-            echo "skip=false" >> "$GITHUB_OUTPUT"
-          else
-            echo "今天尚未签到，继续执行。"
-            echo "skip=true" >> "$GITHUB_OUTPUT"
+
+      - name: 恢复签到成功记录缓存
+        id: cache-success-restore
+        uses: actions/cache@v4
+        with:
+          path: .last_success_date
+          # 使用带日期后缀的动态key
+          key: last-success-marker-${{ steps.get-date.outputs.date }}
+          # 如果精确key没命中，按前缀寻找最近的缓存进行恢复
+          restore-keys: |
+            last-success-marker-
+
+      - name: 判断是否已签到
+        id: check
+        run: |
+          current_date="${{ steps.get-date.outputs.date }}"
+          if [ -f .last_success_date ]; then
+            last_date=$(cat .last_success_date)
+            echo "上次签到日期: $last_date"
+            if [ "$last_date" = "$current_date" ]; then
+              echo "今天已成功签到，跳过执行。"
+              echo "skip=false" >> "$GITHUB_OUTPUT"
+              exit 0
+            fi
           fi
+          echo "今天尚未签到，继续执行。"
+          echo "skip=true" >> "$GITHUB_OUTPUT"
 
   sign-in:
     needs: check-if-already-signed
@@ -79,15 +92,20 @@ jobs:
           SERVER_KEY: ${{ secrets.SERVER_KEY }}
         run: python checkIn_Quark.py
 
-      - name: 更新签到日期到仓库变量
+      - name: 标记今天签到成功
         if: success()
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           date_str=$(TZ='Asia/Shanghai' date '+%Y-%m-%d')
-          # 使用 gh 命令设置/更新变量
-          gh variable set LAST_CHECKIN_DATE --body "$date_str"
-          echo "已更新签到时间 为: $date_str"
+          echo "$date_str" > .last_success_date
+          echo "已记录成功签到日期: $date_str"
+
+      - name: 保存成功记录到缓存
+        if: success()
+        uses: actions/cache@v4
+        with:
+          path: .last_success_date
+          # 使用与恢复时相同的带日期后缀的动态key进行保存
+          key: last-success-marker-${{ needs.check-if-already-signed.outputs.date }}
 
       - name: 清理旧的工作流记录
         uses: Mattraks/delete-workflow-runs@main
