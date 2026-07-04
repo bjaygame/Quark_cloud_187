@@ -15,7 +15,7 @@
 ## 🚀 功能简介
 
 - **每日自动签到**：定时运行脚本完成每日签到，领取成长奖励。
-  - **新增：每日两次签到尝试**：分别在北京时间早上 9 点和下午 1 点左右尝试签到，增加成功率。
+  - **新增：每日两次签到尝试**：分别在北京时间早上 8点05和下午 1 点左右尝试签到，增加成功率。
   - **新增：防止重复签到**：脚本会记录当日成功签到状态，避免不必要的重复执行。
   - **新增：随机延迟执行**：每次签到前加入随机延迟，模拟人工操作，降低被检测风险。
 - **GitHub Actions 托管**：一键配置后，脚本每天自动运行，实现真正的“一劳永逸”。
@@ -26,7 +26,7 @@
 - 感谢  [haozihong ](https://github.com/Spectrollay) 对工作流的优化
 
 - **增加邮件通知和Server酱推送功能**
-- **增加参数`pr`、`fr`，苹果用户可用**
+- **增加参数`pr`、`fr`，苹果用户可用，配置在variables**
 
 ---
 
@@ -62,7 +62,7 @@
 2. 点击 **Repository secrets** 分区下的 **New repository secret** 按钮。
 3. 创建名为 `COOKIE_QUARK` 的 Secret。
 4. 将整理好的 Cookie 信息粘贴到 "Secret" 输入框中并保存。
-5. 创建名为 `QUARK_PR`和`QUARK_FR` 的 Secret。
+5. 点击 **Repository variables** 分区下的 **New repository variable** 按钮。创建名为 `QUARK_PR`和`QUARK_FR` 的 Variable。
 
 #### 可选配置
 1. 邮箱通知
