@@ -31,6 +31,8 @@ jobs:
           # 使用带日期后缀的动态key
           key: last-success-marker-${{ steps.get-date.outputs.date }}
           # 如果精确key没命中，按前缀寻找最近的缓存进行恢复
+          restore-keys: |
+            last-success-marker-
           
 
       - name: 判断是否已签到
