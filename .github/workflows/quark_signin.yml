@@ -25,7 +25,7 @@ jobs:
 
       - name: 恢复签到成功记录缓存
         id: cache-success-restore
-        uses: actions/cache@v4
+        uses: actions/cache/restore@v4
         with:
           path: .last_success_date
           # 使用带日期后缀的动态key
