@@ -60,7 +60,7 @@ jobs:
         uses: actions/checkout@v3
 
       - name: 随机延迟（早上）
-        if: github.event.schedule == '0 1 * * *'
+        if: github.event.schedule == '5 0 * * *'
         run: |
           delay=$((RANDOM % 60))
           echo "早上签到，延迟 $delay 秒后开始.."
